@@ -363,6 +363,7 @@ namespace pxt.usb {
     }
 
     export function pairAsync(): Promise<void> {
+        pxt.debug(`webusb: pairing`);
         return ((navigator as any).usb.requestDevice({
             filters: filters
         }) as Promise<USBDevice>).then(dev => {
@@ -384,6 +385,7 @@ namespace pxt.usb {
     }
 
     function getDeviceAsync(): Promise<USBDevice> {
+        pxt.debug(`webusb: getting devices`)
         return ((navigator as any).usb.getDevices() as Promise<USBDevice[]>)
             .then<USBDevice>((devs: USBDevice[]) => {
                 if (!devs || !devs.length) {
@@ -392,20 +394,24 @@ namespace pxt.usb {
                     err.type = "devicenotfound"
                     throw err;
                 }
+                pxt.debug(`webusb: found ${devs.length} devices`)
                 return devs[0]
             })
     }
 
     let getDevPromise: Promise<HF2.PacketIO>
     export function mkPacketIOAsync() {
+        pxt.log(`mkpacketioasync`)
         if (!getDevPromise)
             getDevPromise = getDeviceAsync()
                 .then(dev => {
+                    pxt.debug(`webusb: init device ${dev.serialNumber}`)
                     let h = new HID(dev)
                     return h.initAsync()
                         .then(() => h)
                 })
                 .catch(e => {
+                    pxt.debug(`webusb: clearing device`)
                     getDevPromise = null
                     return Promise.reject(e)
                 })
