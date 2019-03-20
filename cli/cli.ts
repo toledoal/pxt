@@ -3754,9 +3754,7 @@ function buildDalDTSAsync(c: commandParser.ParsedCommand) {
                     })
             }));
     } else {
-        ensurePkgDir()
-        return prepAsync()
-            .then(() => mainPkg.loadAsync())
+        return loadPkgAsync()
             .then(() => build.buildDalConst(build.thisBuild, mainPkg, true, true))
     }
 }

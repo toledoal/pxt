@@ -470,22 +470,26 @@ export function buildDalConst(buildEngine: BuildEngine, mainPkg: pxt.MainPackage
         let files: string[] = []
         let foundConfig = false
 
+        console.log(mainPkg.sortedDeps().map(d => d.id))
         for (let d of mainPkg.sortedDeps()) {
             if (d.config.dalDTS) {
-                if (d.config.dalDTS.includeDirs)
+                if (d.config.dalDTS.includeDirs) {
+                console.log(`${d.id} -> ${JSON.stringify(d.config.dalDTS.includeDirs)} from ${process.cwd()}`)
                     for (let dn of d.config.dalDTS.includeDirs) {
-                        dn = buildEngine.buildPath + "/" + dn
+                        dn = path.resolve(buildEngine.buildPath + "/" + dn)
                         if (U.endsWith(dn, ".h")) files.push(dn)
                         else {
                             let here = nodeutil.allFiles(dn, 20).filter(fn => U.endsWith(fn, ".h"))
                             U.pushRange(files, here)
                         }
                     }
+                }
                 excludeSyms = d.config.dalDTS.excludePrefix || excludeSyms
                 foundConfig = true
             }
         }
 
+        console.log(JSON.stringify(files, null, 2));
         if (!foundConfig) {
             let incPath = buildEngine.buildPath + "/yotta_modules/microbit-dal/inc/"
             if (!fs.existsSync(incPath))
@@ -494,6 +498,7 @@ export function buildDalConst(buildEngine: BuildEngine, mainPkg: pxt.MainPackage
                 incPath = buildEngine.buildPath
             if (!fs.existsSync(incPath))
                 U.userError("cannot find " + incPath);
+            pxt.log(`inc path: ${incPath}`);
             files = nodeutil.allFiles(incPath, 20)
                 .filter(fn => U.endsWith(fn, ".h"))
                 .filter(fn => fn.indexOf("/mbed-classic/") < 0)
@@ -507,6 +512,8 @@ export function buildDalConst(buildEngine: BuildEngine, mainPkg: pxt.MainPackage
             fc[fn] = fs.readFileSync(fn, "utf8")
         }
         files = Object.keys(fc)
+
+        pxt.log(JSON.stringify(files, null, 2))
 
         // pre-pass - detect conflicts
         for (let fn of files) {
@@ -526,6 +533,7 @@ export function buildDalConst(buildEngine: BuildEngine, mainPkg: pxt.MainPackage
             }
         }
         consts += "}\n"
+        pxt.log(`writing ${constPath}`);
         fs.writeFileSync(constPath, consts)
     }
 }

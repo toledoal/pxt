@@ -781,6 +781,7 @@ namespace pxt.cpp {
                     let isHeader = U.endsWith(fn, ".h")
                     if (isHeader || U.endsWith(fn, ext)) {
                         let fullName = pkg.config.name + "/" + fn
+                        console.log(fullName)
                         if ((pkg.config.name == "base" || /^core($|---)/.test(pkg.config.name)) && isHeader)
                             fullName = fn
                         if (isHeader)
